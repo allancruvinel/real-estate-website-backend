@@ -2,7 +2,7 @@ import { Request, Response } from 'express'
 import { getRepository } from 'typeorm';
 import Apartment from '../models/Apartment';
 import apartmentView from '../views/ApartmentView';
-import cloudinaryService from '../config/cloudinaryService';
+import cloudinaryService from '../services/cloudinaryService';
 
 const cloudinary = require('cloudinary').v2;
 
@@ -83,6 +83,9 @@ export default {
         }
 
         const apartmentRepository = await getRepository(Apartment);
+
+        const oldimages = await apartmentRepository.query(`select id,path from images where apartment_id=${ref}`);
+        cloudinaryService.destroyImages(oldimages);
 
         const apartment = await apartmentRepository.create(data);
 
@@ -272,6 +275,8 @@ export default {
     async apartmentDelete(req: Request, res: Response) {
         const { ref } = req.params;
         const apartmentRepository = await getRepository(Apartment);
+        const images = await apartmentRepository.query(`select id,path from images where apartment_id=${ref}`);
+        cloudinaryService.destroyImages(images);
         try {
             await apartmentRepository.delete(ref);
         }

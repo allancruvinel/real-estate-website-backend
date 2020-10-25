@@ -8,5 +8,5 @@ import routes from './routes';
 app.use(routes);
 
 
-
+console.log("App read to use")
 app.listen(3333);
