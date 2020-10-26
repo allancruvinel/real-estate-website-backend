@@ -10,7 +10,7 @@ module.exports = {
     uploadImages(images) {
         var cont = 0;
         images.map(async image => {
-            return await cloudinary.uploader.upload(image.path, { use_filename: true, unique_filename: false }, function (err, result) {
+            await cloudinary.uploader.upload(image.path, { use_filename: true, unique_filename: false }, function (err, result) {
                 if (err !== undefined) {
                     console.log("error " + err);
 
@@ -19,13 +19,17 @@ module.exports = {
                     cont++;
                 }
             })
+            
+            
         })
     },
     destroyImages(images) {
         var cont = 0;
         images.map(async image => {
-            const slicename = image.path.slice(0, -4);
-            return await cloudinary.uploader.destroy(`${slicename}`, { resource_type: 'image', invalidate: true }, function (err, result) {
+            const parts = image.path.split(".");
+            const slicename = parts[0];
+            //const slicename = image.path.slice(0, -4);
+            await cloudinary.uploader.destroy(`${slicename}`, { resource_type: 'image', invalidate: true }, function (err, result) {
                 if (err !== undefined) {
                     console.log("error " + err);
 
