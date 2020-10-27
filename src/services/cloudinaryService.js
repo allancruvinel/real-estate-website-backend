@@ -1,4 +1,5 @@
 const cloudinary = require('cloudinary').v2;
+const fs = require('fs');
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -17,6 +18,12 @@ module.exports = {
                 } else {
                     console.log("Photo uploaded " + image.filename + ` (${cont + 1}/${images.length})`);
                     cont++;
+                    try {
+                        fs.unlinkSync(image.path)
+                        console.log("Photo destroyed " + image.filename + "  from uploads folder")
+                      } catch(err) {
+                        console.error(err)
+                      }
                 }
             })
             

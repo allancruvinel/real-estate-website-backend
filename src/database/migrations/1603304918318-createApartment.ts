@@ -23,7 +23,7 @@ export class createApartment1603304918318 implements MigrationInterface {
                 },
                 {
                     name: 'nrApto',
-                    type: 'integer'
+                    type: 'varchar'
                 },
                 {
                     name: 'nmPredio',

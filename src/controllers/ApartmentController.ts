@@ -214,13 +214,14 @@ export default {
             sFestas,
             sauna,
             sJogos,
-            ativo
+            ativo,
         } = req.body
 
 
-        const myimages = req.files as Express.Multer.File[];
-        await cloudinaryService.uploadImages(myimages);
-        const images = await myimages.map(image => {
+        const myimages = await req.files as Express.Multer.File[];
+        
+
+        const images = myimages.map(image => {
             
             return { path: image.filename }
         })
@@ -252,7 +253,7 @@ export default {
             sFestas: sFestas === 'true',
             sauna: sauna === 'true',
             sJogos: sJogos === 'true',
-            ativo: ativo === true,
+            ativo: ativo === 'true',
             images
         }
 
@@ -260,7 +261,7 @@ export default {
 
         const apartment = await apartmentRepository.create(data);
 
-
+        await cloudinaryService.uploadImages(myimages);
         try {
             await apartmentRepository.save(apartment);
             console.log('Cadastro Realizado!')
@@ -269,6 +270,8 @@ export default {
         }
 
         return res.status(201).json(apartment);
+
+        
 
     },
 
