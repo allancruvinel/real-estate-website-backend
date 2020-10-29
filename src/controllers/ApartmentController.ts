@@ -120,7 +120,7 @@ export default {
         const { ref } = req.params;
         const apartmentRepository = await getRepository(Apartment);
 
-        //forma dificil porem explicativa
+        //forma dificil porem explicativa 
         try {
             const preview = await apartmentRepository.query(`select * from apartments where id=${ref}`);
             const images = await apartmentRepository.query(`select id,path from images where apartment_id=${ref}`);
