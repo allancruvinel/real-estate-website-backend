@@ -261,14 +261,16 @@ export default {
 
         const apartment = await apartmentRepository.create(data);
 
-        await cloudinaryService.uploadImages(myimages);
+        
         try {
             await apartmentRepository.save(apartment);
             console.log('Cadastro Realizado!')
         } catch (e) {
-            console.log('deu erro ' + e)
-        }
 
+            console.log('deu erro ' + e)
+            return res.json({error: "e "+e});
+        }
+        await cloudinaryService.uploadImages(myimages);
         return res.status(201).json(apartment);
 
         
