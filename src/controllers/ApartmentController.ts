@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { getRepository } from 'typeorm';
+import { getRepository,LessThanOrEqual } from 'typeorm';
 import Apartment from '../models/Apartment';
 import apartmentView from '../views/ApartmentView';
 import cloudinaryService from '../services/cloudinaryService';
@@ -9,10 +9,10 @@ const cloudinary = require('cloudinary').v2;
 
 
 export default {
-    
+
     async update(req: Request, res: Response) {
         const { ref } = req.params;
-        
+
         const {
             titulo,
             descricao,
@@ -36,22 +36,26 @@ export default {
             sFestas,
             sauna,
             sJogos,
-            ativo
+            ativo,
+            atualizarFotos
         } = req.body
 
-        //console.log(req.files);
 
-        
-        
+
+
+
+
+
 
 
         const myimages = req.files as Express.Multer.File[];
         await cloudinaryService.uploadImages(myimages);
         const images = await myimages.map(async image => {
-            
+
             return { path: image.filename }
-            
+
         })
+
 
 
 
@@ -84,8 +88,10 @@ export default {
 
         const apartmentRepository = await getRepository(Apartment);
 
-        const oldimages = await apartmentRepository.query(`select id,path from images where apartment_id=${ref}`);
-        cloudinaryService.destroyImages(oldimages);
+        if (atualizarFotos === 'true') {
+            const oldimages = await apartmentRepository.query(`select id,path from images where apartment_id=${ref}`);
+            cloudinaryService.destroyImages(oldimages);
+        }
 
         const apartment = await apartmentRepository.create(data);
 
@@ -93,10 +99,12 @@ export default {
 
         try {
             await apartmentRepository.update(ref, apartment);
-            await apartmentRepository.query(`delete from images where apartment_id=${ref}`);
-            images.map(async image => {
-                await apartmentRepository.query(`insert into images (path,apartment_id) values ('${(await image).path}',${ref})`);
-            })
+            if (atualizarFotos === 'true') {
+                await apartmentRepository.query(`delete from images where apartment_id=${ref}`);
+                images.map(async image => {
+                    await apartmentRepository.query(`insert into images (path,apartment_id) values ('${(await image).path}',${ref})`);
+                })
+            }
             console.log('apartamento de id ' + ref + ' Atualizado');
 
         } catch (e) {
@@ -108,12 +116,30 @@ export default {
     },
 
     async index(req: Request, res: Response) {
-        const apartmentRepository = await getRepository(Apartment);
-        const apartments = await apartmentRepository.find({
-            relations: ['images']
-        });
+        const { value } = req.params;
+        var data;
+        console.log(value);
+        if (value === undefined) {
+            const apartmentRepository = await getRepository(Apartment);
+            const apartments = await apartmentRepository.find({
+                relations: ['images']
+            });
 
-        return res.status(200).json(apartmentView.renderMany(apartments));
+            return res.status(200).json(apartmentView.renderMany(apartments));
+        }
+        else{
+            const apartmentRepository = await getRepository(Apartment);
+            const apartments = await apartmentRepository.find({
+                where:{
+                    preco: LessThanOrEqual(value)
+                },
+                order:{
+                    preco: "DESC"
+                },
+                relations: ['images']
+            });
+            return res.status(200).json(apartmentView.renderMany(apartments));
+        }
     },
 
     async show(req: Request, res: Response) {
@@ -219,14 +245,14 @@ export default {
 
 
         const myimages = await req.files as Express.Multer.File[];
-        
+
 
         const images = myimages.map(image => {
-            
+
             return { path: image.filename }
         })
 
-        
+
 
 
 
@@ -261,19 +287,19 @@ export default {
 
         const apartment = await apartmentRepository.create(data);
 
-        
+
         try {
             await apartmentRepository.save(apartment);
             console.log('Cadastro Realizado!')
         } catch (e) {
 
             console.log('deu erro ' + e)
-            return res.json({error: "e "+e});
+            return res.json({ error: "e " + e });
         }
         await cloudinaryService.uploadImages(myimages);
         return res.status(201).json(apartment);
 
-        
+
 
     },
 
@@ -284,10 +310,12 @@ export default {
         cloudinaryService.destroyImages(images);
         try {
             await apartmentRepository.delete(ref);
+            console.log('apartamento com o id ' + ref + ' excluido');
         }
         catch (e) {
             console.log('deu erro ' + e);
         }
+
         return res.status(202).json({ response: "deleted" });
     }
 

@@ -9,7 +9,8 @@ const upload = multer(uploadConfig)
 const routes = Router();
 
 routes.post('/register',upload.array('images'),ApartmentController.apartmentCreate);
-routes.get('/apartments',ApartmentController.index);
+routes.get('/search/:value',ApartmentController.index);
+routes.get('/search',ApartmentController.index);
 routes.get('/apartments/:ref',ApartmentController.show);
 routes.put('/apartments/:ref',upload.array('images'),ApartmentController.update);
 routes.delete('/apartments/:ref',ApartmentController.apartmentDelete);
