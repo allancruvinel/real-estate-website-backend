@@ -33,10 +33,8 @@ module.exports = {
     destroyImages(images) {
         var cont = 0;
         images.map(async image => {
-            const parts = image.path.split(".");
-            const slicename = parts[0];
             //const slicename = image.path.slice(0, -4);
-            await cloudinary.uploader.destroy(`${slicename}`, { resource_type: 'image', invalidate: true }, function (err, result) {
+            await cloudinary.uploader.destroy(`${image.path}`, { resource_type: 'image', invalidate: true }, function (err, result) {
                 if (err !== undefined) {
                     console.log("error " + err);
 

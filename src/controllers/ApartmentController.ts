@@ -82,7 +82,7 @@ export default {
             sFestas: sFestas === 'true',
             sauna: sauna === 'true',
             sJogos: sJogos === 'true',
-            ativo: ativo === true,
+            ativo: ativo === 'true',
 
         }
 
@@ -121,23 +121,23 @@ export default {
         console.log(value);
         if (value === undefined) {
             const apartmentRepository = await getRepository(Apartment);
+            /*
             const apartments = await apartmentRepository.find({
-                relations: ['images']
+                order:{
+                    preco: "DESC",
+                },
+                relations: ['images'] 
             });
+            */
 
+            const apartments = await apartmentRepository.createQueryBuilder('apartments').leftJoinAndSelect('apartments.images', 'images').orderBy({'apartments.preco':'DESC','images.id':'ASC'}).getMany();
+ 
             return res.status(200).json(apartmentView.renderMany(apartments));
         }
         else{
             const apartmentRepository = await getRepository(Apartment);
-            const apartments = await apartmentRepository.find({
-                where:{
-                    preco: LessThanOrEqual(value)
-                },
-                order:{
-                    preco: "DESC"
-                },
-                relations: ['images']
-            });
+
+            const apartments = await apartmentRepository.createQueryBuilder('apartments').leftJoinAndSelect('apartments.images', 'images').orderBy({'apartments.preco':'DESC','images.id':'ASC'}).where(`apartments.preco <=${value}`).getMany();
             return res.status(200).json(apartmentView.renderMany(apartments));
         }
     },
@@ -211,7 +211,7 @@ export default {
             res.status(200).json(apartmentView.render(apartment));
         } catch (e) {
             console.log('deu erro ' + e);
-            return res.status(500).send("Internal Error");
+            return res.status(404).send("Internal Error");
         }
     },
 
